@@ -1,0 +1,50 @@
+{% extends "main_temp/base.html" %} {% load static %} {% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6">
+    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Замовлення</h1>
+
+        <a
+            href="{% url 'orderings:create_order' %}"
+            class="flex items-center justify-center bg-[#CEC526] hover:bg-[#F2E70A] text-[#33332E] text-sm font-semibold px-5 py-3 rounded-xl transition transform hover:scale-105 w-full sm:w-auto text-center"
+        >
+            + Створити замовлення
+        </a>
+    </div>
+
+    <div class="overflow-x-auto border border-gray-300 rounded-2xl bg-white shadow-sm">
+        <div class="flex justify-center py-3">
+            <!-- для фільтрації по клієнту, якщо нічого не вибрали тоді всіх показує -->
+            <form method="get" class="flex gap-2 items-center">
+                {% csrf_token %}
+                <label class="font-semibold">Клієнт</label>
+                {{ order_filter_form.client }}
+                <button type="submit" class="text-sm bg-gray-200 px-3 py-1 rounded">Фільтр</button>
+            </form>
+        </div>
+
+        <table class="w-full min-w-[650px]">
+            <thead>
+                <tr class="border-b text-center bg-gray-50 text-gray-700 font-semibold">
+                    <th class="border-r py-3 px-4 w-16">№</th>
+                    <th class="border-r py-3 px-4">Опис / Деталі</th>
+                    <th class="border-r py-3 px-4">Дата замовлення</th>
+                    <th class="py-3 px-4">Вартість замовлення</th>
+                </tr>
+            </thead>
+            <tbody class="text-center text-gray-800">
+                {% for order in object_list %}
+
+                <tr class="border-b hover:bg-gray-50/50 transition cursor-pointer" 
+                    onclick="window.location='{% url 'orderings:order_detail' order.pk %}'">
+                    <td class="border-r py-4 px-2 font-medium">{{order.pk}}</td>
+                    <td class="border-r px-4 text-left">{{order.client.name}}</td>
+                    <td class="border-r px-4">{{ order.created_at|date:"d.m.Y" }}</td>
+                    <td class="px-4 font-semibold text-gray-900">{{order.total_price}}грн</td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}
