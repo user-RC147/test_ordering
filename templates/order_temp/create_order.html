@@ -1,0 +1,130 @@
+{% extends "main_temp/base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+    <div class="flex mb-6">
+        <a href="{% url "orderings:order_page" %}" 
+           class="flex items-center justify-center bg-[#cce9f8] hover:bg-[#aedbf4] text-[#2e332e] px-5 py-3 rounded-xl text-sm font-medium transition transform hover:scale-105 w-full sm:w-auto">
+            ← Повернутися
+        </a>
+    </div>
+
+    <div class="bg-white border border-gray-300 rounded-3xl p-6 w-full max-w-xl mx-auto shadow-sm">
+        <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800">Створити замовлення</h2>
+            <div>
+                <a href="{% url 'orderings:create_product' %}" 
+               class="bg-amber-50 hover:bg-amber-100 text-[#33332E] text-xs font-semibold px-4 py-2 rounded-xl transition">
+                + Новий товар
+            </a>
+
+            <a href="{% url 'orderings:create_client' %}" 
+               class="bg-amber-50 hover:bg-amber-100 text-[#33332E] text-xs font-semibold px-4 py-2 rounded-xl transition">
+                + Новий клієнт
+            </a>
+            </div>
+            
+        </div>
+
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <div class="flex flex-col gap-2 text-sm text-gray-700">
+                <label class="font-semibold">Клієнт</label>
+                {{ order_form.client }}
+            </div>
+
+            <div class="border-t pt-4 border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Позиції замовлення</h3>
+
+                {{ formset.management_form }}
+
+                <!-- Контейнер рядків formset — JS додає нові рядки сюди -->
+                <div id="formset-container">
+                    {% for form in formset %}
+                    <div class="formset-row flex gap-3 items-center mb-3">
+                        <div class="flex-1">{{ form.product }}</div>
+                        <div class="w-24">
+                            <input type="number" name="{{ form.quantity.html_name }}" 
+                                value="{{ form.quantity.value|default:1 }}"
+                                min="1"
+                                class="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm">
+                        </div>
+                        <!-- DELETE чекбокс прихований — кнопка "×" керує ним -->
+                        <div class="hidden">{{ form.DELETE }}</div>
+                        <button type="button" onclick="removeRow(this)"
+                                class="text-red-400 hover:text-red-600 font-bold text-lg px-2">×</button>
+                    </div>
+                    {% if form.errors %}
+                    <div class="text-red-500 text-xs mb-2">{{ form.errors }}</div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="flex gap-3 mt-3">
+                    <button type="button" onclick="addRow()"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl transition">
+                        + Додати товар
+                    </button>
+                    
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4 border-gray-100">
+                <button type="submit" 
+                        class="bg-[#CEC526] hover:bg-[#F2E70A] text-[#33332E] text-base font-semibold px-6 py-3 rounded-xl transition transform hover:scale-105 w-full sm:w-auto">
+                    Зберегти замовлення
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+  
+    const totalForms = document.querySelector('#id_orderitem_set-TOTAL_FORMS');
+
+    function addRow() {
+        // Беремо поточну кількість форм — це буде індекс нового рядка
+        const formCount = parseInt(totalForms.value);
+        
+        // Клонуємо перший рядок як шаблон
+        const container = document.getElementById('formset-container');
+        const firstRow = container.querySelector('.formset-row');
+        const newRow = firstRow.cloneNode(true);
+
+        // Замінюємо індекс у всіх name та id атрибутах
+        // Django формує їх як: orderitem_set-0-product, orderitem_set-1-product і т.д.
+        newRow.innerHTML = newRow.innerHTML.replaceAll(
+            `orderitem_set-0-`,
+            `orderitem_set-${formCount}-`
+        );
+
+        // Очищаємо значення полів нового рядка
+        newRow.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+        newRow.querySelectorAll('input[type="number"]').forEach(el => el.value = 1);
+        newRow.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+
+        container.appendChild(newRow);
+
+        // Збільшуємо лічильник форм — Django перевіряє це при POST
+        totalForms.value = formCount + 1;
+    }
+
+    function removeRow(btn) {
+        const row = btn.closest('.formset-row');
+        const container = document.getElementById('formset-container');
+        
+        // Не видаляємо якщо це єдиний рядок
+        if (container.querySelectorAll('.formset-row').length <= 1) return;
+
+        // Знаходимо прихований DELETE чекбокс і відмічаємо його
+        // Django при POST побачить DELETE=on і не збереже цей OrderItem
+        const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+        if (deleteCheckbox) deleteCheckbox.checked = true;
+
+        // Ховаємо рядок візуально
+        row.style.display = 'none';
+    }
+</script>
+{% endblock %}

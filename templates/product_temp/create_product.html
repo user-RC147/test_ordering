@@ -1,0 +1,36 @@
+{% extends "main_temp/base.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- Верхній рядок: Повернутися -->
+    <div class="flex mb-6">
+        <a href="javascript:history.back()" 
+           class="flex items-center justify-center bg-[#cce9f8] hover:bg-[#aedbf4] text-[#2e332e] px-5 py-3 rounded-xl text-sm font-medium transition transform hover:scale-105 w-full sm:w-auto">
+            ← Повернутися
+        </a>
+    </div>
+
+    <!-- Контентна картка форми -->
+    <div class="bg-white border border-gray-300 rounded-3xl p-6 w-full max-w-xl mx-auto shadow-sm">
+        <div class="flex justify-between items-center mb-6 border-b pb-4 border-gray-100">
+            <h2 class="text-xl font-bold text-gray-800">Створити замовлення</h2>
+        </div>
+        
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+            
+            <!-- Рендеринг полів форми через div з кастомними стилями інпутів -->
+            <div class="flex flex-col gap-4 text-sm text-gray-700">
+                {{ form.as_div }}
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6 border-t pt-4 border-gray-100">
+                <button type="submit" 
+                        class="bg-[#CEC526] hover:bg-[#F2E70A] text-[#33332E] text-base font-semibold px-6 py-3 rounded-xl transition transform hover:scale-105 w-full sm:w-auto">
+                    Зберегти замовлення
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
